@@ -1,0 +1,836 @@
+<html>
+<head>
+<title>mlog - a fast and flexible logging facility for C++</title>
+</head>
+<body style="text-align:justify; font-size: 16px; font-family: verdana; padding-left: 20px; padding-right: 20px;">
+
+<b style="font-size:18px;"><a name="toc">TABLE OF CONTENTS</a></b><br><br><br>
+1. <a href="intro.html">Introduction</a><br>
+<font style="padding-left: 40px;">1.1 <a href="intro.html#terms">Terms</a></font><br>
+<font style="padding-left: 40px;">1.2 <a href="intro.html#features">Features</a></font><br>
+<font style="padding-left: 40px;">1.3 <a href="intro.html#download">Download</a></font><br>
+<font style="padding-left: 40px;">1.4 <a href="intro.html#start">Kick start examples</a></font><br>
+<br>
+2. <a href="architecture.html">Architecture of the library</a><br>
+
+<font style="padding-left: 40px;">2.1 <a href="architecture.html#module">Log module</a></font><br>
+<font style="font-size: 12px;">
+<font style="padding-left: 80px;"><a href="architecture.html#module_logger">module_logger()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#self_t">self_t</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#set_level">set_level()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#menable">enable()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#imbue_all">imbue_all()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#set_format_all">set_format_all()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#sink_t">sink_t</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#sink_ptr">sink_ptr</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#mfilter_ptr">filter_ptr</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#add_sink">add_sink()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#set_tag">set_tag()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#add_filter_all">add_filter_all()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#set_level_name_provider">set_level_name_provider()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#set_tag_provider">set_tag_provider()</a></font><br>
+</font>
+
+<font style="padding-left: 40px;">2.2 <a href="architecture.html#sink">Log sink</a></font><br>
+<font style="font-size: 12px;">
+<font style="padding-left: 80px;"><a href="architecture.html#sink_self_t">self_t</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#filter_ptr">filter_ptr</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#imbue">imbue()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#set_format">set_format()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#add_filter">add_filter()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#sink_enable">enable()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#null_sink">null_sink</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#wcout_sink">wcout_sink</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#wcerr_sink">wcerr_sink</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#cout_sink">cout_sink</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#cerr_sink">cerr_sink</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#ms_debug_sink">ms_debug_sink</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#file_sink">file_sink</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#size_file_sink">size_file_sink</a></font><br>
+</font>
+
+<font style="padding-left: 40px;">2.3 <a href="architecture.html#format">Log message format</a></font><br>
+<font style="font-size: 12px;">
+<font style="padding-left: 80px;"><a href="architecture.html#format-cons">format()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#manip_t">manip_t</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#operator-in">operator &lt;&lt;</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#format-list">list of log attributes</a></font><br>
+</font>
+
+<font style="padding-left: 40px;">2.4 <a href="architecture.html#tag">Log tags</a></font><br>
+
+<font style="padding-left: 40px;">2.5 <a href="architecture.html#filter">Log filters</a></font><br>
+<font style="font-size: 12px;">
+<font style="padding-left: 80px;"><a href="architecture.html#filter_enable">enable()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#module_is">module_is()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#file_is">file_is()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#level_is">level_is()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#tag_is">tag_is()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#tag_exists">tag_exists()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#message_contains">message_contains()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#message_not_contains">message_not_contains()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#not_filter">not_filter()</a></font><br>
+<font style="padding-left: 80px;"><a href="architecture.html#or_filter">or_filter()</a></font><br>
+</font>
+<br>
+
+3. <a href="custom.html">Customization</a><br>
+<font style="padding-left: 40px;">3.1 <a href="custom.html#level">Creating your own log levels</a></font><br>
+<font style="padding-left: 40px;">3.2 <a href="custom.html#tag">Creating your own tag support</a></font><br>
+<font style="padding-left: 40px;">3.3 <a href="custom.html#sink">Implementing a log sink</a></font><br>
+<font style="padding-left: 40px;">3.4 <a href="custom.html#filter">Implementing a log filter</a></font><br>
+<br>
+<br>
+
+<b style="font-size:16px;">1. ARCHITECTURE OF THE LIBRARY </b><br><br>
+
+&nbsp;&nbsp; <u>Following is a brief UML overview of the library classes and interfaces.</u> Points of interest are:
+<ul>
+<li style="margin-bottom: 8px;">
+Each log module can have any amount of thread loggers, while each thread logger belongs only to one module. It
+means that different log modules will have different thread logger for each thread.
+<li style="margin-bottom: 8px;">
+Each log module can have any amount of sinks, and each sink may belong to different log modules.
+<li style="margin-bottom: 8px;">
+Each sink may have a format, or may have no format at all. Several sinks may have the same format.
+<li style="margin-bottom: 8px;">
+Format consists of zero or more log attributes.
+<li style="margin-bottom: 8px;">
+There are default implementations for log level names, tags, filters, sinks, and attributes.
+<li style="margin-bottom: 8px;">
+There is a global object, tl_caller, which manages log records and log modules by using C++ constructors and
+destructors.
+</ul>
+
+<br>
+<img src="mlog-arch.jpg"/>
+<br>
+
+<a name='module'><b style="font-size:16px;">2.1 LOG MODULE</b><br><br></a>
+&nbsp;&nbsp; <u>To perform logging, mlog only needs to know about log module interface.</u> The interface is defined
+with template parameter TCH, which specifies character type to use. There are three typedefs to help with
+the interface declaration. Also there are three preprocessor macro functions to perform logging. To write log
+messages you must include "log.h" and use the macro functions.
+<pre style="font-weight: bold;">
+#include &lt;log.h&gt;
+
+template&lt;class TCH&gt;
+struct module_logger_itf
+{ ... };
+
+typedef module_logger_itf&lt;wchar_t&gt; wmodule_logger_itf;
+typedef module_logger_itf&lt;char&gt; amodule_logger_itf;
+typedef module_logger_itf&lt;char&gt; cmodule_logger_itf;
+
+#define LOGW(LOGGER, LEVEL)
+#define LOGA(LOGGER, LEVEL)
+#define LOGC(LOGGER, LEVEL)
+</pre>
+
+&nbsp;&nbsp; You don't need to use any functions from the interface to log messages. You should declare the interface
+and use macro functions to do it. Each macro function returns a reference to std::basic_ostringstream&lt;TCH&gt; object,
+and may be used to write log messages. Under WIN32/VC++, wchar_t logging classes can handle char strings, but under
+CYGWIN they cannot.
+<pre style="font-weight: bold;">
+extern mlog::cmodule_logger_itf& g_logger_ref;
+...
+LOGC(g_logger_ref, mlog::err) << "An error message: " << 556;
+</pre>
+
+&nbsp;&nbsp; To setup the logging facility, you must create log modules, add sinks to them, and then
+format and filter the sinks. Log module is implemented in module_logger class. The class is defined with
+template parameter TCH, which specifies character type. There are three typedefs to help with log module
+declaration. To setup mlog, you must include "log_system.h" <b>It is important to understand</b> that once
+log module is used, its setup cannot be changed.  For example, you cannot add new sinks to a log module,
+if it has already been used with one of the LOG macro functions. Setup functions <b>are not thread safe</b>.
+<pre style="font-weight: bold;">
+#include &lt;log_system.h&gt;
+
+template&lt;class TCH&gt;
+class module_logger : boost::noncopyable, public module_logger_itf&lt;TCH&gt;
+{ ... };
+
+typedef module_logger&lt;char&gt; cmodule_logger;
+typedef module_logger&lt;char&gt; amodule_logger;
+typedef module_logger&lt;wchar_t&gt; wmodule_logger;
+</pre>
+
+&nbsp;&nbsp;<u>Below is a list of module_logger members, which you can use to create and setup log modules.</u>
+<ul style="margin-left: 0px;">
+
+<li style="margin-bottom: 16px;">
+<a name="module_logger"><pre style="font-weight: bold;">module_logger(const TCH* name = NULL, int id = 0)</pre></a>
+Constructor, which takes module name and module id. The parameters may be used in filters and log format.
+<br><br>
+<b>name</b> is a name of the log module<br>
+<b>id</b> is an integer identifier of the log module
+<br><br>
+<pre style="font-size: 12px;">mlog::cmodule_logger logger1("MY LOGGER", 5);
+mlog::wmodule_logger logger2("LOG2");</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="self_t"><pre style="font-weight: bold;">typedef module_logger&lt;TCH&gt; self_t</pre></a>
+Defines the type of this log module.
+
+<li style="margin-bottom: 16px;">
+<a name="set_level"><pre style="font-weight: bold;">self_t& set_level(int level)</pre></a>
+This function assigns new log level to the log module. Messages with levels above the new value will
+be discarded. This function is thread safe and may be used in runtime. However, it is not guaranteed
+to take effect immediately, old log level may be in effect during a short period of time, which may be
+up to hundreds of milliseconds.
+By default, there are 6 log levels defined: crit, err, warn, info, dbg, trace. Corresponding strings
+are: "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL". It is possible to use any other integer
+as a level value, if you provide a custom level name interface, as described in
+<a href="custom.html#level">Creating your own log levels</a>
+<br><br>
+<b>level</b> a new log level to assign to the log module
+<br><br>
+<pre style="font-size: 12px;">logger1.set_level(mlog::err);
+logger2.set_level(mlog::trace);</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="menable"><pre style="font-weight: bold;">void enable(bool enable)</pre></a>
+Use this function to completely disable or enable log module. When a log module is disabled, log expressions
+are not evaluated.
+<br><br>
+<b>enable</b> true to enable log module and false to disable it
+<br><br>
+<pre style="font-size: 12px;">logger2.enable(false);
+logger2.enable(true);</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="imbue_all"><pre style="font-weight: bold;">self_t& imbue_all(const std::locale& new_locale)</pre></a>
+This function imbues all sinks, which were previously added to the log module, with a new locale.
+The log module also stores the locale to imbue other sinks during setup, and thread loggers in
+runtime. This function is not thread safe and cannot be used after a thread uses the log module. <br><br>
+<b>new_locale</b> a new locale to use with sinks and thread loggers
+<br><br>
+<pre style="font-size: 12px;">logger1.imbue_all(std::locale("rus_Russia.866"));
+logger2.imbue_all(std::locale("rus_Russia.1251"));</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="set_format_all"><pre style="font-weight: bold;">self_t& set_format_all(const format&lt;TCH&gt;& new_format)</pre></a>
+This function sets format of all log sinks, which were previously added to the log module. It will not affect
+sinks, added after you call the function.
+The function is not thread safe and cannot be used after a thread uses the log module.
+<br><br>
+<b>new_format</b> a new format of all previously added log sinks
+<br><br>
+<pre style="font-size: 12px;">mlog::cformat cfmt;
+cfmt << mlog::fp_message << std::endl;
+logger1.set_format_all(cfmt);
+
+mlog::wformat wfmt;
+wfmt << mlog::fp_message << std::endl;
+logger2.set_format_all(wfmt);</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="sink_t"><pre style="font-weight: bold;">typedef sink&lt;TCH&gt; sink_t</pre></a>
+Defines the type of log sink, which can be used with the log module.
+
+<li style="margin-bottom: 16px;">
+<a name="sink_ptr"><pre style="font-weight: bold;">typedef boost::shared_ptr&lt;sink_t&gt; sink_ptr</pre></a>
+Defines the shared pointer type of log sink, which can be used with the log module.
+
+<li style="margin-bottom: 16px;">
+<a name="mfilter_ptr"><pre style="font-weight: bold;">typedef typename sink_t::filter_ptr filter_ptr</pre></a>
+Defines the shared pointer type of log filter, which can be used with the log module and its sink_t type.
+
+<li style="margin-bottom: 16px;">
+<a name="add_sink"><pre style="font-weight: bold;">self_t& add_sink(sink_ptr new_sink)</pre></a>
+Adds a new sink to the log module. The sink is imbued by the module's locale.
+This function is not thread safe and cannot be used after a thread uses the log module.
+<br><br>
+<b>new_sink</b> shared pointer to a new sink, which will be added to the log module
+<br><br>
+<pre style="font-size: 12px;">mlog::cmodule_logger::sink_ptr pcsink(new mlog::cout_sink);
+logger1.add_sink(pcsink);</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">self_t& add_sink(sink_t* psink)</pre>
+Adds a new sink to the log module, and takes ownership of the pointer. The sink is imbued by the module's locale.
+This function is not thread safe and cannot be used after a thread uses the log module.
+<br><br>
+<b>psink</b> pointer to a new sink, which will be added to the log module
+<br><br>
+<pre style="font-size: 12px;">logger2.add_sink(new mlog::wcout_sink);</pre>
+
+<li style="margin-bottom: 16px;">
+<a name='set_tag'><pre style="font-weight: bold;">void set_tag(const TCH* name, const TCH* value)</pre></a>
+Sets a tag, identified by its name, to a new string value. If there is no such tag a new one will be created.
+This function is thread safe, if the tag provider of the log module is thread safe.
+<br><br>
+<b>name</b> the name of the tag to be changed or added<br>
+<b>value</b> the string value to be assigned to the tag
+<br><br>
+<pre style="font-size: 12px;">logger2.set_tag(L"system_state", L"starting");</pre>
+
+<li style="margin-bottom: 16px;">
+<a name='set_tag2'><pre style="font-weight: bold;">void set_tag(int id, const TCH* value)</pre></a>
+Sets a tag, identified by an integer value, to a new string value. If there is no such tag a new one will be created.
+This function is thread safe, if the tag provider of the log module is thread safe.
+<br><br>
+<b>id</b> the integer identifier of the tag to be changed or added<br>
+<b>value</b> the string value to be assigned to the tag
+<br><br>
+<pre style="font-size: 12px;">logger1.set_tag(1, "first stream initialized");</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="add_filter_all"><pre style="font-weight: bold;">self_t& add_filter_all(filter_ptr pfilter)</pre></a>
+Adds a new filter to all sinks, which were previously added to the log module. A list of filters is cheked using AND
+logical operation. See <a href="architecture.html#filter">Log filters</a> for more information. This function will
+not affect sinks, added after you call it.
+The function is not thread safe and cannot be used after a thread uses the log module.
+<br><br>
+<b>pfilter</b> a new filter to add to all existing sinks
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::message_not_contains("NEVER LOGGED"));
+logger2.add_filter_all(mlog::message_not_contains(L"NEVER LOGGED"));</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="set_level_name_provider"><pre style="font-weight: bold;">self_t& set_level_name_provider(std::auto_ptr&lt; level_name_provider&lt;TCH&gt; &gt; prov)</pre></a>
+This function stores a pointer to log level name provider, which is used to convert log levels to string representation.
+There is a default implementation, it is assigned during log module construction.
+You must use this function to provide custom convertion of an integer log level value to string.
+See <a href="custom.html#level">Creating your own log levels</a> for more information.
+This function is not thread safe and cannot be used after a thread uses the log module.
+<br><br>
+<b>prov</b> pointer to a new log level name provider
+
+<li style="margin-bottom: 16px;">
+<a name="set_tag_provider"><pre style="font-weight: bold;">self_t& set_tag_provider(std::auto_ptr&lt; tag_provider&lt;TCH&gt; &gt; prov)</pre></a>
+Stores a pointer to log tag provider, which is used to resolve tag names and integer tag ids into their string values.
+There is a default implementation, it is assigned during log module construction.
+You must use this function to provide custom tag support.
+See <a href="custom.html#tag">Creating your own tag support</a> for more information.
+This function is not thread safe and cannot be used after a thread uses the log module.
+<br><br>
+<b>prov</b> pointer to a new log tag provider
+</ul>
+<br>
+
+<a name='sink'><b style="font-size:16px;">2.2 LOG SINK</b><br><br></a>
+&nbsp;&nbsp; <u>Log sinks are used to write formatted log records to different destinations</u> like file, console, debug window, and so on.
+Each sink has a mutex, which is used when many threads attempt to write log records. Each thread locks sinks in a log module one by one,
+releasing previous lock when the next lock has been acquired. It allows several threads to write to different sinks simultaneously.
+Each sink may have its own set of filters and its own format. Sink itself is an abstract class, defined with template parameter TCH, which
+specifies character type.
+<pre style="font-weight: bold;">template&lt;class TCH&gt;
+class sink
+{ ... };</pre>
+
+&nbsp;&nbsp;<u>Below is a list of sink members, which you can use to create and setup log sinks.</u>
+<ul style="margin-left: 0px;">
+
+<li style="margin-bottom: 16px;">
+<a name="sink_self_t"><pre style="font-weight: bold;">typedef sink&lt;TCH&gt; self_t</pre></a>
+Defines the type of this log sink.
+
+<li style="margin-bottom: 16px;">
+<a name="filter_ptr"><pre style="font-weight: bold;">typedef boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; filter_ptr</pre></a>
+Defines the type of log filter, which can be used with the log sink.
+
+<li style="margin-bottom: 16px;">
+<a name="imbue"><pre style="font-weight: bold;">virtual self_t& imbue(const std::locale& new_locale)</pre></a>
+This function imbues the log sink with a new locale. Some log sinks also store the locale to imbue their inner
+structures in runtime. You may override this function, when implementing your own sinks, but you must
+call the base function. See <a href="custom.html#sink">Implementing a log sink</a> for details.
+This function is not thread safe and must not be used after a thread uses the log module, to which the sink belongs.
+<br><br>
+<b>new_locale</b> a new locale to use with sinks and thread loggers
+<br><br>
+<pre style="font-size: 12px;">mlog::cmodule_logger::sink_ptr file_sink(new mlog::const_cfile_sink("log_file_name"));
+file_sink->imbue(std::locale());</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="set_format"><pre style="font-weight: bold;">self_t& set_format(const format&lt;TCH&gt;& new_format)</pre></a>
+Sets format of this log sink.
+This function is not thread safe and must not be used after a thread uses the log module, to which the sink belongs.
+<br><br>
+<b>new_format</b> a new format of the log sink
+<br><br>
+<pre style="font-size: 12px;">file_sink->set_format(mlog::cformat() << std::setw(80) << mlog::fp_message << std::endl);</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="add_filter"><pre style="font-weight: bold;">self_t& add_filter(filter_ptr pfilter)</pre></a>
+Adds a new filter to the log sink. Each sink has a list of filters, and applies them one by one using operator AND.
+See <a href="architecture.html#filter">Log filters</a> for more information.
+This function is not thread safe and must not be used after a thread uses the log module, to which the sink belongs.
+<br><br>
+<b>pfilter</b> a new filter to add to the sink
+<br><br>
+<pre style="font-size: 12px;">file_sink->add_filter(mlog::level_is(mlog::info));</pre>
+
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="sink_enable">void enable(bool on)</a></pre>
+Use this function to turn a sink on and off. If the sink is turned off, it doesn't rotate and its
+<a href="custom.html#swrite_string">write_string()</a> function is not called. However,
+<a href="architecture.html#set_format_all">set_format_all()</a> and <a href="architecture.html#imbue_all">imbue_all()</a>
+will work even when the sink is not enabled.
+It is not guaranteed that the sink will be disabled immediately, it may take up to hundreds of milliseconds.
+<br><br>
+<b>on</b> a boolean value, true to turn the sink on (default) and false to turn it off
+<br><br>
+<pre style="font-size: 12px;">// turn the sink off
+pcsink->enable(false);
+
+</ul>
+
+&nbsp;&nbsp;  <u>There are several sinks implemented in mlog:</u><br>
+<ul style="margin-left: 0px;">
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="null_sink">template&lt;class TCH&gt;</a>
+class null_sink : public sink&lt;TCH&gt;
+{ ... };
+
+typedef null_sink<char> cnull_sink;
+typedef null_sink<char> anull_sink;
+typedef null_sink<wchar_t> wnull_sink;
+</pre>
+This sink doesn't write anywhere. Good for testing.
+<pre style="font-size: 12px;">new mlog::wnull_sink;</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="wcout_sink">class wcout_sink</a> : public sink&lt;wchar_t&gt;
+{ ... };</pre>
+This sink writes strings to std::wcout, unicode version of standard output stream.
+<pre style="font-size: 12px;">new mlog::wcout_sink;</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="wcerr_sink">class wcerr_sink </a>: public sink&lt;wchar_t&gt;
+{ ... };</pre>
+This sink writes strings to std::wcerr, unicode version of standard error stream.
+<pre style="font-size: 12px;">new mlog::wcerr_sink;</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="cout_sink">class cout_sink</a> : public sink&lt;char&gt;
+{ ... };</pre>
+This sink writes strings to std::cout
+<pre style="font-size: 12px;">new mlog::cout_sink;</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="cerr_sink">class cerr_sink</a> : public sink&lt;char&gt;
+{ ... };</pre>
+This sink writes strings to std::cerr
+<pre style="font-size: 12px;">new mlog::cerr_sink;</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="ms_debug_sink">template&lt;class TCH&gt;</a>
+class ms_debug_sink : public sink&lt;TCH&gt;
+{ ... };</pre>
+Microsoft specific sink, which writes messages to a debug window in Visual Studio.
+<pre style="font-size: 12px;">new mlog::ms_debug_sink<char>;</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="file_sink">template&lt;class rotate_policy, class name_policy, class TCH&gt;</a>
+class file_sink : public sink&lt;TCH&gt;
+{
+	typedef typename name_policy::char_type name_type;
+
+	file_sink(const name_type* prefix, const name_type* suffix, bool allow_buffer);
+
+	...
+};</pre>
+This is a sink, which writes messages to file and uses date and time based log rotation. In addition to character type, it has two more template arguments:
+time based rotation policy and naming policy. Its constructor accepts two strings, which define filename prefix and suffix. Suffix should include the '.' character.
+<br><br>
+<b>rotate_policy</b>  is used to tell, when file rotation is needed, it must define
+<pre style="margin-top: 4px;">bool operator()(const detail::time_type* ptime)</pre>
+<b>name_policy</b> is used to generate file names, it should have a template parameter, which specifies
+charater type to use with file open functions, and it must have one operator and one typedef
+<pre style="margin-top: 4px;">const TCH* operator()(const TCH* prefix, const TCH* suffix, bool rotate)
+typedef TCH char_type;
+</pre>
+<b>prefix</b> is log file name prefix, for example "daylog" will become "daylog-2008-04-10.log"<br>
+<b>suffix</b> is log file name suffix, including the '.' character, by default it is ".log"<br>
+<b>allow_buffer</b> is a flag, which specifies if the file is flushed each time a log record is written into it, defaults to false
+<br><br>
+There are several predefined file sinks, which allow to create sinks, which rotate files each day, each month, and never rotate.
+<pre style="font-weight: bold;">typedef file_sink&lt;day_rotation, day_filename&lt;char&gt;, wchar_t&gt; day_wfile_sink;
+typedef file_sink&lt;day_rotation, day_filename&lt;char&gt;, char&gt; day_afile_sink;
+typedef file_sink&lt;day_rotation, day_filename&lt;char&gt;, char&gt; day_cfile_sink;
+typedef file_sink&lt;month_rotation, month_filename&lt;char&gt;, wchar_t&gt; month_wfile_sink;
+typedef file_sink&lt;month_rotation, month_filename&lt;char&gt;, char&gt; month_afile_sink;
+typedef file_sink&lt;month_rotation, month_filename&lt;char&gt;, char&gt; month_cfile_sink;
+typedef file_sink&lt;const_rotation, const_filename&lt;char&gt;, wchar_t&gt; const_wfile_sink;
+typedef file_sink&lt;const_rotation, const_filename&lt;char&gt;, char&gt; const_afile_sink;
+typedef file_sink&lt;const_rotation, const_filename&lt;char&gt;, char&gt; const_cfile_sink;</pre>
+
+<pre style="font-size: 12px;">new mlog::const_cfile_sink("const_file", ".log");
+new mlog::day_wfile_sink("output", ".txt");
+new mlog::month_cfile_sink("month");</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="size_file_sink">template&lt;class TCH, class TNCH&gt;</a>
+class size_file_sink : public file_sink&lt;size_rotation, rotate_filename&lt;TNCH&gt;, TCH&gt;
+{
+	size_file_sink(unsigned long max_size, int max_files, const TNCH* prefix,
+		const TNCH* suffix, bool allow_buffer);
+};
+
+typedef size_file_sink&lt;wchar_t, char&gt; size_wfile_sink;
+typedef size_file_sink&lt;char, char&gt; size_afile_sink;
+typedef size_file_sink&lt;char, char&gt; size_cfile_sink;</pre>
+This is a sink, which writes messages to file and uses file size based log rotation. It has two template arguments, which specify
+character type to use with logging and with file naming. Its constructor accepts two strings, which define filename prefix and suffix.
+Suffix should include the '.' character.
+<br><br>
+<b>max_size</b> is a maximum size of one file, in bytes<br>
+<b>max_files</b> is a maximum number of files to keep, it must be greater than 0<br>
+<b>prefix</b> is log file name prefix, for example "rotatelog" will become "rotatelog.log", "rotatelog.log.1", "rotatelog.log.2" and so on<br>
+<b>suffix</b> is log file name suffix, including the '.' character, by default it is ".log"<br>
+<b>allow_buffer</b> is a flag, which specifies if the file is flushed each time a log record is written into it, defaults to false
+<br><br>
+<pre style="font-size: 12px;"> // log.log, 1 megabyte, 10 files max
+new mlog::size_cfile_sink(1024*1024, 10, "log");
+// output.txt, 10 megabytes, 4 files max
+new mlog::size_wfile_sink(1024*1024*10, 4, "output", ".txt");</pre>
+
+</ul>
+<br>
+
+<a name='format'><b style="font-size:16px;">2.3 LOG FORMAT</b><br><br></a>
+&nbsp;&nbsp; <u>Log format is a set of rules, used to convert a log record into text</u>. Format in mlog consists
+of prefix, user message and suffix. Prefix, suffix or both may be skipped. Only one log message may appear in
+a log format. As mentioned several times before, each sink in mlog can have its own format. To format sinks,
+you must create an instance of the format class and then use insertion operator &lt;&lt; to insert formatting
+rules. You may insert any type in format, if it is supported by iostreams, including manipulators. (It means that by
+implementing custom iostream manipulators you can fully customize your log formatting.)
+After creation, each inserted type goes into prefix, and when you insert fp_message, format stops recording prefix and starts
+recording suffix.
+Format is defined with template parameter TCH, which specifies character type. 
+<pre style="font-weight: bold;">
+template&lt;class TCH&gt;
+class format
+{ ... };
+
+typedef format&lt;wchar_t&gt; wformat;
+typedef format&lt;char&gt; aformat;
+typedef format&lt;char&gt; cformat;
+</pre>
+
+&nbsp;&nbsp;<u>Below is a list of format members, which you can use to create and setup log format.</u> 
+<ul style="margin-left: 0px;">
+
+<li style="margin-bottom: 16px;">
+<a name="format-cons"><pre style="font-weight: bold;">format()</pre></a>
+Constructor.
+<br><br>
+<pre style="font-size: 12px;">mlog::cformat()
+mlog::wformat()</pre>
+
+<li style="margin-bottom: 16px;">
+<a name="manip_t"><pre style="font-weight: bold;">typedef std::basic_ostream&lt;TCH&gt;&(*manip_t)(std::basic_ostream&lt;TCH&gt;&);</pre></a>
+Defines type to be used with iostreams manipulators insertion.
+
+<li style="margin-bottom: 16px;">
+<a name="operator-in"><pre style="font-weight: bold;">format& operator&lt;&lt;(manip_t val)</pre></a>
+Used to insert some iostreams manipulators.
+<br><br>
+<pre style="font-size: 12px;">mlog::cformat() &lt;&lt; std::endl;</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">template&lt;class T&gt;
+format& operator&lt;&lt;(T val)</pre>
+Used to insert all other types and some iostreams manipulators. If type is a log attribute, then it will
+be processed in runtime.
+<br><br>
+<pre style="font-size: 12px;">mlog::cformat() &lt;&lt; "a string" &lt;&lt; std::setw(8) &lt;&lt; mlog::fp_level_name;</pre>
+
+</ul>
+
+&nbsp;&nbsp;<u>This is a list of log attributes, which you can insert into log format.</u> After you insert
+fp_message, format stops recording prefix and begins to record suffix.
+
+<ul style="margin-left: 0px;">
+<li><a name="format-list"><b>fp_file</b></a> a full path to the source file, where a call to log appears<br>
+<li><b>fp_file_short</b> short file name, without a path<br>
+<li><b>fp_short</b> synonym for fp_file_short<br>
+<li><b>fp_line</b> line, on which log message appears<br>
+<li><b>fp_func</b> full qualified C++ function name, supported only on WIN32<br>
+<li><b>fp_day</b> day as two decimal numbers 01-31<br>
+<li><b>fp_month</b> month as two decimal numbers 01-12<br>
+<li><b>fp_year</b> year as four decimal numbers 2008<br>
+<li><b>fp_hour</b> hour as two decimal numbers 00-23<br>
+<li><b>fp_minute</b> minutes as two decimal numbers 00-59<br>
+<li><b>fp_second</b> seconds as two decimal numbers 00-59<br>
+<li><b>fp_milli</b> milliseconds as three decimal numbers 000-999<br>
+<li><b>fp_level</b> log level as an integer value<br>
+<li><b>fp_level_name</b> log level name, returned by log level name provider<br>
+<li><b>fp_newline</b> newline, equivalent to std::endl<br>
+<li><b>fp_thread</b> id of the calling thread<br>
+<li><b>fp_pid</b> id of the calling process<br>
+<li><b>fp_module</b> name of the logging module, which is used to log messages<br>
+<li><b>fp_module_id</b> integer id of the logging module, which is used to log messages<br>
+<li><b>fp_message</b> log message, only one message allowed per log format<br>
+<li><b>tag(const TCH* name)</b> value of the tag, identified by string name
+<li><b>tag(int id)</b> value of the tag, identified by integer
+</ul>
+
+<pre style="font-size: 12px;">mlog::cformat() &lt;&lt; '[' &lt;&lt; mlog::fp_day &lt;&lt; '.' &lt;&lt; mlog::fp_month &lt;&lt; '.' &lt;&lt; mlog::fp_year &lt;&lt; ' ' &lt;&lt;
+	mlog::fp_hour &lt;&lt; ':' &lt;&lt; mlog::fp_minute &lt;&lt; ':' &lt;&lt; mlog::fp_second &lt;&lt; ',' &lt;&lt; mlog::fp_milli &lt;&lt;
+	"] [" &lt;&lt; std::setfill(' ') &lt;&lt; std::left &lt;&lt; std::setw(8) &lt;&lt; mlog::fp_level_name &lt;&lt; "] " &lt;&lt;
+	mlog::fp_message &lt;&lt;
+	" (" &lt;&lt; mlog::fp_file_short &lt;&lt; '@' &lt;&lt; mlog::fp_line &lt;&lt; ')' &lt;&lt; mlog::fp_newline
+
+// this example format produces log messages, which look like
+// [13.05.2008 17:05:42,402] [ERROR   ] Error message (test.cpp:178)
+// [13.05.2008 17:05:42,402] [INFO    ] Info message (test.cpp:180)
+</pre>
+<br>
+
+<a name='tag'><b style="font-size:16px;">2.4 LOG TAGS</b><br><br></a>
+&nbsp;&nbsp; <u>Log tag is a marked text data, which may change during program execution.</u> Tag may be identified by an
+integer value, for performance, or by a string. This mechanism may be used to identify different global conditions
+in a program. With current tag implementation, mlog guarantees that all calls to LOGC, LOGA or LOGW made after
+<a href="#set_tag">set_tag()</a> function has returned, will have the modified tag value. Normally, you don't
+need to create any objects to use tags, log format and log module manage tags for you. The following example demonstrates
+how tags may be used to log a global program state. Note that state is changed after we change the tag value.
+
+<pre style="font-size: 12px;">
+mlog::cmodule_logger logger;
+logger.add_sink(new mlog::cout_sink);
+// define the state of our process
+int process_state = 0;
+// define a tag name, which will be used to identify global process state
+const char ps_tag[] = "process_state";
+// insert the state tag into format
+logger.set_format_all(mlog::cformat() << '[' << mlog::tag(ps_tag) << "] " << mlog::fp_message << std::endl);
+// set initial tag value
+logger.set_tag(ps_tag, "starting");
+// log messages
+LOGC(logger, mlog::warn) << "This message is logged when system is starting";
+// now first change the tag value, and then change the process state
+logger.set_tag(ps_tag, "started");
+process_state = 1;
+// log messages
+LOGC(logger, mlog::warn) << "This message is logged when the system has started";
+
+// output is:
+//[starting] This message is logged when system is starting
+//[started] This message is logged when the system has started
+</pre>
+<br>
+
+<a name='filter'><b style="font-size:16px;">2.5 LOG FILTERS</b><br><br></a>
+&nbsp;&nbsp; <u>Log filter is a predicate, which belongs to one or more sinks.</u> The predicate is used to filter
+log records, which pass through the log sinks. A sink can have zero or more filters in a list. Each filter in the list
+must allow
+a message to pass for the message to be written to the sink's destination. It means the list of filters is combined
+with logical AND. To improve filtering performance, mlog has two types of filtering. First type
+processes log attribute values and may be fast, when comparing integer values. Second type processes only log messages
+and is always slow, because it usually searches for a substring. It is not possible to filter log attributes'
+integer values by their string representation.
+<br><br>
+<ul style="margin-left: 0px;">
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="filter_enable">void enable(bool on)</a></pre>
+Use this function to turn a filter on and off. If the filter is turned off, its <a href="custom.html#fiter_allow">allow()</a>
+function is not called, and it is assumed that log record is allowed to pass the filter. It is not guaranteed that the filter will
+be disabled immediately, it may take up to hundreds of milliseconds.
+<br><br>
+<b>on</b> a boolean value, true to turn the filter on and false to turn it off
+<br><br>
+<pre style="font-size: 12px;">// the following example will allow any module name, because the filter is disabled
+mlog::cmodule_logger::filter_ptr filter(mlog::module_is("NOT MY LOGGER"));
+filter->enable(false);
+logger1.add_filter_all(filter);</pre>
+
+</ul>
+<br>
+
+&nbsp;&nbsp;<u>This is a list of log filters, which you can insert into log module.</u> You can insert filters
+by calling <a href="#add_filter_all">add_filter_all()</a> function or <a href="#add_filter">add_filter()</a> function.
+
+<ul style="margin-left: 0px;">
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="module_is">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; module_is(const TCH* name)</pre>
+Matches module name against the provided string. Log record is allowed only if module name is the same as the provided string.
+<br><br>
+<b>name</b> a string to compare with module name
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::module_is("MY LOGGER"));
+logger2.add_filter_all(mlog::module_is(L"LOG2"));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="module_is">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; module_is(int id)</pre>
+Matches module integer id against the provided value. Log record is allowed only if module id is the same as the provided integer.
+<br><br>
+<b>id</b> an integer value to compare with module id
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::module_is&lt;char&gt;(5));
+logger2.add_filter_all(mlog::module_is&lt;wchar_t&gt;(0));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="file_is">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; file_is(const TCH* name)</pre>
+Matches short file name and the provided string. Log record is allowed only if file name is the same as
+the provided string.
+<br><br>
+<b>name</b> a string to compare with file name
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::file_is("test.cpp"));
+logger2.add_filter_all(mlog::file_is(L"test.cpp"));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="level_is">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; level_is(int level)</pre>
+This filter allows log record only if its severity level is the same as the provided integer.
+<br><br>
+<b>level</b> an integer value to compare with level of the log record being processed
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::level_is&lt;char&gt;(mlog::err));
+logger2.add_filter_all(mlog::level_is&lt;wchar_t&gt;(mlog::warn));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="tag_is">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; tag_is(const TCH* tag_name, const TCH* tag_val)</pre>
+Checks if the value of tag, identified by a string name, is the same as provided string. If tag doesn't
+exists, its value is an empty string, and may be successfully compared to "".
+<br><br>
+<b>tag_name</b> name of the tag to check<br>
+<b>tag_val</b> a string, which must match the value of the tag; if the string is empty, it will successfuly
+match to tags, which don't exist
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::tag_is("test_tag", "contents of a test tag"));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="tag_exists">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; tag_exists(const TCH* tag_name)</pre>
+Checks if tag, identified by name, exists.
+<br><br>
+<b>tag_name</b> name of the tag to check
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::tag_exists("tag_must_exist")));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">template&lt;class TCH&gt;
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; tag_is(int tag_id, const TCH* tag_val)</pre>
+Checks if the value of tag, identified by an integer, is the same as provided string. If tag doesn't
+exists, its value is an empty string, and may be successfully compared to "".
+<br><br>
+<b>tag_id</b> identifier of the tag to check<br>
+<b>tag_val</b> a string, which must match the value of the tag; if the string is empty, it will successfuly
+match to tags, which don't exist
+<br><br>
+<pre style="font-size: 12px;">logger2.add_filter_all(mlog::tag_is(1, "starting"));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">template&lt;class TCH&gt;
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; tag_exists(int tag_id)</pre>
+Checks if tag, identified by an integer, exists.
+<br><br>
+<b>tag_id</b> identifier of the tag to check
+<br><br>
+<pre style="font-size: 12px;">logger2.add_filter_all(mlog::tag_exists<wchar_t>(7));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="message_contains">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; message_contains(const TCH* str)</pre>
+This filter checks log messages for containing the provided string. A log record is allowed only if log message,
+corresponding to the log record, contains the string. Note that the filter works only with log string, created
+by user. It doesn't check formatted prefix and suffix.
+<br><br>
+<b>str</b> string to search in log message
+<br><br>
+<pre style="font-size: 12px;">logger1.add_filter_all(mlog::message_contains("."));
+LOGC(logger1, mlog::info) << "This message never passes the filter, no matter how log sinks are formatted";
+LOGC(logger1, mlog::info) << "This message always passes the filter.";</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="message_not_contains">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; message_not_contains(const TCH* str)</pre>
+This filter is just a boolean negation of message_contains filter. It checks that message doesn't contain the
+provided substring. Note that the filter works only with log string, created by user. It doesn't check
+formatted prefix and suffix.
+<br><br>
+<b>str</b> string to search in log message
+<br><br>
+<pre style="font-size: 12px;">logger2.add_filter_all(mlog::message_not_contains(L"You will never see this in log"));
+LOGW(logger2, log::warn) << L"You will never see this in log";
+</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="not_filter">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; not_filter(boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; pfilter)</pre>
+This is a logical NOT operation. The result of calling this function is another
+filter, which allows log record only when its internal filter doesn't allow it.
+<br><br>
+<b>pfilter</b> inner filter, result of which is negated
+<br><br>
+<pre style="font-size: 12px;">// allows all log records, except those with info log level
+logger1.add_filter_all(mlog::not_filter(mlog::level_is<char>(mlog::info)));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">template&lt;class TCH&gt;
+boost::shared_ptr&lt; mlog::filter&lt;TCH&gt; &gt; operator~(boost::shared_ptr&lt; mlog::filter&lt;TCH&gt; &gt; pfilter)</pre>
+This is a logical NOT operation, same as above, but more readable. The reason behind using operator~() instead of
+operator!() is that boost::shared_ptr already has operator!() defined. However, operator!() for filters will be
+implemented in future releases.
+<br><br>
+<b>pfilter</b> inner filter, result of which is negated
+<br><br>
+<pre style="font-size: 12px;">// allows all log records, except those with info log level
+logger1.add_filter_all(~mlog::level_is<char>(mlog::info));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;"><a name="or_filter">template&lt;class TCH&gt;</a>
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; or_filter(boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; pleft,
+				boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; pright)</pre>
+This is a logical OR operation. It allows log records, if either of its inner filters allow it. First it checks
+left filter, and then right, if needed.
+<br><br>
+<b>pleft</b> left inner filter, it is checked first<br>
+<b>pright</b> right inner filter, it is checked second, and only if the left filter doesn't allow the log record
+to pass
+<br><br>
+<pre style="font-size: 12px;">// this filter always allows log records to pass
+logger1.add_filter_all(mlog::or_filter(mlog::message_contains("."), mlog::message_not_contains(".")));</pre>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">template&lt;class TCH&gt;
+boost::shared_ptr&lt; mlog::filter&lt;TCH&gt; &gt; operator||(boost::shared_ptr&lt; mlog::filter&lt;TCH&gt; &gt; pleft,
+	boost::shared_ptr&lt; mlog::filter&lt;TCH&gt; &gt; pright)</pre>
+
+This is a logical OR operation, same as above, but more readable.
+<br><br>
+<b>pleft</b> left inner filter, it is checked first<br>
+<b>pright</b> right inner filter, it is checked second, and only if the left filter doesn't allow the log record to pass
+<br><br>
+<pre style="font-size: 12px;">// this filter always allows log records to pass
+logger1.add_filter_all(mlog::message_contains(".") || mlog::message_not_contains("."));</pre>
+
+</ul>
+
+
+&nbsp;&nbsp;<u>This is a simple example, which demonstrates how to use log filters</u> to redirect log messages
+of different log levels to different files.
+<pre style="font-size: 12px;">
+mlog::cmodule_logger logger;
+logger.add_sink(new mlog::cout_sink);
+// add two file sinks, which will records only error and only warning messages
+mlog::cmodule_logger::sink_ptr perr(new mlog::const_cfile_sink("errors"));
+logger.add_sink(perr);
+mlog::cmodule_logger::sink_ptr pwarn(new mlog::const_cfile_sink("warnings"));
+logger.add_sink(pwarn);
+// format sinks in a simple way
+logger.set_format_all(mlog::cformat() << '[' << std::left << std::setw(8) << mlog::fp_level_name << "] " <<
+	mlog::fp_message << std::endl);
+// add filters to sinks, to allow only messages with specified log level
+perr->add_filter(mlog::level_is<char>(mlog::err));
+pwarn->add_filter(mlog::level_is<char>(mlog::warn));
+// write log messages
+LOGC(logger, mlog::err) << "Error message";
+LOGC(logger, mlog::warn) << "Warning message";
+LOGC(logger, mlog::info) << "Information message, it is not written in files";
+</pre>
+
+<br><br><a href="#toc" style="font-size:16px;">&lt;&lt;&lt; TOP</a>
+
+</body>
+</html>

@@ -1,0 +1,317 @@
+<html>
+<head>
+<title>mlog - a fast and flexible logging facility for C++</title>
+</head>
+<body style="text-align:justify; font-size: 16px; font-family: verdana; padding-left: 20px; padding-right: 20px;">
+
+<b style="font-size:18px;"><a name="toc">TABLE OF CONTENTS</a></b><br><br><br>
+1. <a href="intro.html">Introduction</a><br>
+<font style="padding-left: 40px;">1.1 <a href="intro.html#terms">Terms</a></font><br>
+<font style="padding-left: 40px;">1.2 <a href="intro.html#features">Features</a></font><br>
+<font style="padding-left: 40px;">1.3 <a href="intro.html#download">Download</a></font><br>
+<font style="padding-left: 40px;">1.4 <a href="intro.html#start">Kick start examples</a></font><br>
+<br>
+2. <a href="architecture.html">Architecture of the library</a><br>
+<font style="padding-left: 40px;">2.1 <a href="architecture.html#module">Log module</a></font><br>
+<font style="padding-left: 40px;">2.2 <a href="architecture.html#sink">Log sink</a></font><br>
+<font style="padding-left: 40px;">2.3 <a href="architecture.html#format">Log message format</a></font><br>
+<font style="padding-left: 40px;">2.4 <a href="architecture.html#tag">Log tags</a></font><br>
+<font style="padding-left: 40px;">2.5 <a href="architecture.html#filter">Log filters</a></font><br>
+<br>
+3. <a href="custom.html">Customization</a><br>
+<font style="padding-left: 40px;">3.1 <a href="custom.html#level">Creating your own log levels</a></font><br>
+<font style="padding-left: 40px;">3.2 <a href="custom.html#tag">Creating your own tag support</a></font><br>
+<font style="padding-left: 40px;">3.3 <a href="custom.html#sink">Implementing a log sink</a></font><br>
+<font style="padding-left: 40px;">3.4 <a href="custom.html#filter">Implementing a log filter</a></font><br>
+<br>
+<br>
+
+<b style="font-size:16px;">1. INTRODUCTION </b><br><br>
+
+&nbsp;&nbsp; <u>Logging facility is a mechanism,</u> which is demanded by most developers all around the
+world. My goal was to collect most demanded requirements and to create  a fast, open source, easy to use logging facility for C++.
+The result is <b>mlog</b>, an open source, cross platform logging library for C++. It is based on iostreams to provide type safe logging.
+The library supports unicode strings, and it is thread safe. There are many ways to customize the library by implementing
+some basic interfaces.
+<br><br>
+&nbsp;&nbsp; <u>There are some well known log systems,</u> which have their advantages and disadvantages over mlog.
+<ul>
+
+<li style="margin-bottom: 8px;">
+<a href="http://sourceforge.net/projects/log4cpp">log4cpp</a> is a port of popular log4j logging facility. It is familiar to Java developers, and
+supports setup files. Its disadvantages that the library is almost not supported, has many bugs, and uses unsafe
+printf-style logging.
+
+<li style="margin-bottom: 8px;">
+<a href="http://torjo.com/log2/index.html">boost::log</a> is a project by John Torjo, which is a logging facility to be added to boost. Its advantages
+over mlog is a high amount of features, like lazy filter evaluation, improved formatting, scoped logs, etc. Also the
+implementation works quite fast in release builds. Disadvantages of the library are very complicated interface,
+and constant memory allocations in runtime (at least when Windows tutorials are copy-pasted).
+
+</ul>
+
+<a name='terms'><b style="font-size:16px;">1.1 TERMS</b><br><br></a>
+&nbsp;&nbsp; <u>This is a list of terms,</u> used in this documentation:
+<ul>
+
+<li style="margin-bottom: 8px;">
+<u>Log message</u> is a piece of information, provided by user.
+
+<li style="margin-bottom: 8px;">
+<u>Log level</u> is an integer value, provided by user. It is used to indicate severity of an associated
+log message. The less log level is, the more important is associated log message. Logging facility may
+decide to discard unimportant log messages with levels above the value, specified by a user. Log level
+can be translated into string representation at any time.
+
+<li style="margin-bottom: 8px;">
+<u>Log tag</u> is a marked text data, which may change during program execution. Tags may be
+identified by numbers or by strings.
+
+<li style="margin-bottom: 8px;">
+<u>Log attribute</u> is a piece of information, provided by logging facility. It can be a source file name,
+line in the source file, date, time, value of a log tag, and other data, collected by a logging facility.
+
+<li style="margin-bottom: 8px;">
+<u>Log record</u> is a pack of information, which includes one log message and a set of log attributes. A log
+record may be put in log or may be discarded.
+
+<li style="margin-bottom: 8px;">
+<u>Log format</u> is a set of rules, used to convert a log record into text. A log format can have only one
+rule for log message.
+
+<li style="margin-bottom: 8px;">
+<u>Log filter</u> is a set of rules, used to check a log record and to tell if the record has to be put in log or
+discarded. Filters may check log attributes, log tags and log messages.
+
+<li style="margin-bottom: 8px;">
+<u>Log sink</u> is a destination, to which log records are delivered. It may be a file on disk, a database,
+standard output stream, debug output stream, and so on. Each log sink can have its own format and its own filter.
+Only one thread can use one sink at the same time, but many threads can use different sinks simultaneously. Log
+sinks support locale.
+
+<li style="margin-bottom: 8px;">
+<u>Thread logger</u> is an object, allocated per thread. It is used to create log messages. Several threads can
+create log messages simultaneously. Thread loggers support locale.
+
+<li style="margin-bottom: 8px;">
+<u>Log module</u> is a global object, which maintains a list of log sinks and a collection of thread loggers. It is
+used to create log messages and log records, and to deliver them to log sinks. One log module may be used by
+several threads at once to create logs, but majority of setup functions are not thread safe.
+
+</ul>
+<br>
+
+<a name='features'><b style="font-size:16px;">1.2 FEATURES</b><br><br></a>
+&nbsp;&nbsp; <u>This is a short list of all features,</u> provided by the library:<br>
+
+<ul>
+<li style="margin-bottom: 8px;">
+The library is simple to use, you may check <a href="intro.html#start">basic examples</a> to get the feel of
+the library and to use its basic features.
+
+<li style="margin-bottom: 8px;">
+The library utilizes iostreams to make log entries more safe than printf-style logging facilities.
+
+<li style="margin-bottom: 8px;">
+Several log modules can be created, each module may have an unique name and a list of log
+destinations (sinks). One sink may belong to different log modules.
+
+<li style="margin-bottom: 8px;">
+Each log destination (sink) may have a custom format and custom filters. Log format is easy to create, and it
+may include different attributes like source file, line, log level, thread id, date, time, log module name
+and so on. Log format also supports insertion of iostream manipulators.
+
+<li style="margin-bottom: 8px;">
+There is a set of built in log sinks: MS debug, console, file with time based rotation, file with size based
+rotation. It is possible to create your own log destinations (sinks).
+
+<li style="margin-bottom: 8px;">
+Log filters are designed to be fast, they don't compare integer numbers with strings, and so on.
+It is possible to implement your own filters.
+
+<li style="margin-bottom: 8px;">
+The library is exception safe. If an exception occurs, while evaluating a log message, the output will be
+what it has at the point of exception.
+
+<li style="margin-bottom: 8px;">
+Log entries are level-lazy, which means log expression is not evaluated for log levels higher than the level
+of the logging module.
+
+<li style="margin-bottom: 8px;">
+Several built in log levels provided: critical, error, warning, info, debug and trace. It is possible to
+add custom log levels.
+
+<li style="margin-bottom: 8px;">
+The library supports unicode messages. Log modules and sinks support locale.
+
+<li style="margin-bottom: 8px;">
+The library supports log tags, which may be used to format log messages. A tag may be identified by a number or
+by a string.
+
+<li style="margin-bottom: 8px;">
+The library is multi threading, providing a high performance logging pipeline, which enables many threads
+to write log messages to one log module simultaneously.
+
+<li style="margin-bottom: 8px;">
+Text iostreams are carefully watched to perform as less memory reallocations as possible. For example, on Windows
+platform the library doesn't reallocate memory for log messages of less or equal length than the length of previous messages.
+
+<li style="margin-bottom: 8px;">
+The library performance is comparable to iostreams, being only 5-20% slower in release builds. File sinks are only twice slower
+than using fprintf() in release builds. According to performance tests, average time of writing a log message to a file is between
+0.005 - 0.02 milliseconds.
+
+<li style="margin-bottom: 8px;">
+The library is based on <a href="http://boost.org">boost (1.35.0 and above)</a> and stl. It doesn't require building, only header files are needed.
+"Light" version of header file provided to improve compilation speed, when only logging functionality without setup is needed.
+
+<li style="margin-bottom: 8px;">
+The library is licensed under GNU GPL v.3 license. To use it in a commercial application, you must contact
+the author for a free license of a type, which suits your needs. I am asking to contact me, because I would like to get feedback
+on mlog usability.
+
+</ul>
+<br>
+
+<a name='download'><b style="font-size:16px;">1.3 DOWNLOAD</b><br><br></a>
+&nbsp;&nbsp; You may download released versions of the library from SourceForge:<br>
+<a href="https://sourceforge.net/project/showfiles.php?group_id=172974">[Download link]</a><br><br>
+
+&nbsp;&nbsp; In addition, there is a read-only SVN access by this link:<br>
+https://mlog.svn.sourceforge.net/svnroot/mlog<br><br>
+
+&nbsp;&nbsp; The library depends on boost 1.35, you can download it from the boost official site:<br>
+<a href="http://www.boost.org/users/download/">http://www.boost.org/users/download/</a><br><br>
+
+&nbsp;&nbsp; The project is hosted on SourceForge:<br>
+<a href="https://sourceforge.net/projects/mlog">[Project location link]</a><br><br>
+<br>
+
+<a name='start'><b style="font-size:16px;">1.4 KICK START EXAMPLES</b><br><br></a>
+&nbsp;&nbsp; <u>You may find full source code</u> of basic usage examples in the 'examples' directory in the
+library distribution.<br><br>
+
+&nbsp;&nbsp; <u>Here is a step by step example</u>, which demonstrates how to use basic features of the library. This
+example uses the library with char (byte) strings. You may notice that some types and macroses are marked with
+letter 'c', which is for "char".<br><br>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+First of all, we include "heavy" header file, which defines all log facilities.
+</font>
+<pre>#include "log_system.h"</pre>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+Next, we create one log module.
+</font>
+<pre>int main(int argc, char* argv[])
+{
+	// create a logger module
+	mlog::cmodule_logger logger;</pre>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+Now we have to setup the log module we have created. First of all, we will add two sinks to the
+module. One to write log records to the standard output stream and one to append log records to file.
+</font>
+<pre>	// add a sink, which writes messages to stdout
+	logger.add_sink(new mlog::cout_sink);
+	// add a sink, which writes messages to a file
+	logger.add_sink(new mlog::const_cfile_sink("log_file_name"));</pre>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+Next step may seem a little complicated. We create a log format here. You may notice several enum
+values being put into format. The values are described <a href="architecture.html#format">here</a>. In short, we
+create a format, which translates a log record into a string, which consists of string representation of a log
+level, date in year-month-day format, time in hour:minutes:seconds:milliseconds format, log message and source
+file name with a line in it. You may notice that it is possible to use iostream manipulators.
+</font>
+<pre>	// create format, which is a combination of several log parts and character data
+	mlog::cformat format;
+	format << std::setw(8) << std::setfill(' ') << std::left << mlog::fp_level_name << ": " <<
+		mlog::fp_year << '-' << mlog::fp_month << '-' << mlog::fp_day << ' ' <<
+		mlog::fp_hour << ':' << mlog::fp_minute << ':' << mlog::fp_second << ':' << mlog::fp_milli << ' ' <<
+		mlog::fp_message << " (" << mlog::fp_file_short << '@' << mlog::fp_line << ')' << std::endl;</pre>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+Now we can setup format on all log sinks, which we added to the log module. We will also setup log level.
+Messages with log level higher than we provide here will be discarded.
+</font>
+<pre>	// set format on each sink
+	logger.set_format_all(format);
+	// set log level to debug, messages that are above this level are not logged
+	// (only trace messages are not logged in this case)
+	logger.set_level(mlog::dbg);</pre>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+The library is ready to use. We may log messages with different log levels.
+</font>
+<pre>	// log messages
+	LOGC(logger, mlog::crit) << "A critical error message";
+	LOGC(logger, mlog::err) << "An error message";
+	LOGC(logger, mlog::warn) << "A warning message";
+	LOGC(logger, mlog::info) << "An informational message";
+	LOGC(logger, mlog::dbg) << "A debug message";
+	LOGC(logger, mlog::trace) << "A trace message";
+	return 0;
+}</pre>
+
+&nbsp;&nbsp; <u>Another example</u> demonstrates how to use "light" version of the header file. It consists of two
+different files. One is used to setup log module, and another is used to log messages.<br><br>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+This is fisrt file. We create log module and initialize it here. Light logging mechanism uses log module
+interface, thats why we also have to define a reference to the global log module.
+</font>
+<pre>
+#include "log_system.h"
+
+// this function defined in another file
+void log_messages();
+
+// log module becomes global
+mlog::cmodule_logger g_logger;
+mlog::cmodule_logger_itf& g_logger_ref = g_logger;
+
+int main(int argc, char* argv[])
+{
+	g_logger.add_sink(new mlog::cout_sink);
+	g_logger.add_sink(new mlog::const_cfile_sink("log_file_name"));
+	mlog::cformat format;
+	format << mlog::fp_level_name << ": " <<
+		mlog::fp_year << '-' << mlog::fp_month << '-' << mlog::fp_day << ' ' <<
+		mlog::fp_hour << ':' << mlog::fp_minute << ':' << mlog::fp_second << ':' << mlog::fp_milli << ' ' <<
+		mlog::fp_message << " (" << mlog::fp_file_short << '@' << mlog::fp_line << ')' << mlog::fp_newline;
+	g_logger.set_format_all(format);
+	g_logger.set_level(mlog::dbg);
+	// messages are logged from another function
+	log_messages();
+	return 0;
+}
+</pre>
+
+<font style="font-size:12px;">&nbsp;&nbsp;
+This is second file. We declare reference to the global log module. Many setup functions are not available in
+the iterface, but it allows to write log messages and change log tags.
+</font>
+<pre>
+// we include only light version of header file
+#include "log.h"
+
+// log module is defined and initialized in first file
+extern mlog::cmodule_logger_itf& g_logger_ref;
+
+void log_messages()
+{
+	// log messages
+	LOGC(g_logger_ref, mlog::crit) << "critical error message";
+	LOGC(g_logger_ref, mlog::err) << "error message";
+	LOGC(g_logger_ref, mlog::warn) << "warning message";
+	LOGC(g_logger_ref, mlog::info) << "informational message";
+	LOGC(g_logger_ref, mlog::dbg) << "debug message";
+	LOGC(g_logger_ref, mlog::trace) << "trace message";
+}
+</pre>
+
+<br><a href="#toc" style="font-size:16px;">&lt;&lt;&lt; TOP</a>
+
+</body>
+</html>

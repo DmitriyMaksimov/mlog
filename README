@@ -1,0 +1,7 @@
+mlog documentation can be found in ./doc
+
+./configure
+
+make to build examples
+
+make install to install library headers

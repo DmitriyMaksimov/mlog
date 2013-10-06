@@ -1,0 +1,260 @@
+<html>
+<head>
+<title>mlog - a fast and flexible logging facility for C++</title>
+</head>
+<body style="text-align:justify; font-size: 16px; font-family: verdana; padding-left: 20px; padding-right: 20px;">
+
+<b style="font-size:18px;"><a name="toc">TABLE OF CONTENTS</a></b><br><br><br>
+1. <a href="intro.html">Introduction</a><br>
+<font style="padding-left: 40px;">1.1 <a href="intro.html#terms">Terms</a></font><br>
+<font style="padding-left: 40px;">1.2 <a href="intro.html#features">Features</a></font><br>
+<font style="padding-left: 40px;">1.3 <a href="intro.html#download">Download</a></font><br>
+<font style="padding-left: 40px;">1.4 <a href="intro.html#start">Kick start examples</a></font><br>
+<br>
+2. <a href="architecture.html">Architecture of the library</a><br>
+<font style="padding-left: 40px;">2.1 <a href="architecture.html#module">Log module</a></font><br>
+<font style="padding-left: 40px;">2.2 <a href="architecture.html#sink">Log sink</a></font><br>
+<font style="padding-left: 40px;">2.3 <a href="architecture.html#format">Log message format</a></font><br>
+<font style="padding-left: 40px;">2.4 <a href="architecture.html#tag">Log tags</a></font><br>
+<font style="padding-left: 40px;">2.5 <a href="architecture.html#filter">Log filters</a></font><br>
+<br>
+3. <a href="custom.html">Customization</a><br>
+<font style="padding-left: 40px;">3.1 <a href="custom.html#level">Creating your own log levels</a></font><br>
+<font style="padding-left: 40px;">3.2 <a href="custom.html#tag">Creating your own tag support</a></font><br>
+<font style="padding-left: 40px;">3.3 <a href="custom.html#sink">Implementing a log sink</a></font><br>
+<font style="padding-left: 40px;">3.4 <a href="custom.html#filter">Implementing a log filter</a></font><br>
+<br>
+
+<b style="font-size:16px;">3. CUSTOMIZATION </b><br><br>
+
+<a name='level'><b style="font-size:16px;">3.1 CREATING YOUR OWN LOG LEVELS</b><br><br></a>
+&nbsp;&nbsp; <u>To create your own log levels,</u> you must implement level_name_provider interface, which is
+used to translate integer log levels into string representation. You don't need to do anything else,
+because mlog treats log levels as integers.
+<pre>
+template&lt;class TCH&gt;
+struct level_name_provider
+{
+	virtual ~level_name_provider() throw() { }
+	virtual const TCH* level_name(int n) const = 0;
+};
+
+typedef std::auto_ptr&lt; level_name_provider&lt;char&gt; &gt; clevel_name_provider_ptr;
+typedef std::auto_ptr&lt; level_name_provider&lt;char&gt; &gt; alevel_name_provider_ptr;
+typedef std::auto_ptr&lt; level_name_provider&lt;wchar_t&gt; &gt; wlevel_name_provider_ptr;
+</pre>
+
+&nbsp;&nbsp;<u>The following code example demonstrates how custom log levels may be created.</u> It uses
+<a href="architecture.html#set_level_name_provider">set_level_name_provider()</a> function to set
+log level name provider of a log module.
+<pre>
+struct my_level_name : public mlog::level_name_provider<char>
+{
+	const char* level_name(int n) const
+	{
+		switch(n)
+		{
+		default:	return "UNKNOWN";
+		case 1:	return "ONE";
+		case 2:	return "TWO";
+		case 3:	return "THREE";
+		case 4:	return "FOUR";
+		}
+	}
+};
+
+...
+
+mlog::cmodule_logger logger;
+logger.set_level_name_provider(mlog::clevel_name_provider_ptr(new my_level_name));
+// levels 4 and above will not appear in log
+logger.set_level(3);
+LOGC(logger, 1) << "first level message";
+LOGC(logger, 2) << "second level message";
+LOGC(logger, 3) << "third level message";
+LOGC(logger, 4) << "fourth level message, it is not logged";
+</pre>
+
+<a name='tag'><b style="font-size:16px;">3.2 CREATING YOUR OWN TAG SUPPORT</b><br><br></a>
+&nbsp;&nbsp; <u>To create your own log tag support,</u> you must implement tag_provider interface. Then you
+must call <a href="architecture.html#set_tag_provider">set_tag_provider()</a> function to set tag
+provider of a log module.
+<pre>
+template&lt;class TCH&gt;
+struct tag_provider
+{
+	virtual ~tag_provider() throw() { }
+
+	// this function must be thread safe, unless you create a single threaded tag provider
+	// it must return empty string, if tag is not found
+	virtual const TCH* get_tag(const TCH* name) const = 0;
+	virtual const TCH* get_tag(int id) const = 0;
+
+	// this function must be thread safe, unless you create a single threaded tag provider
+	virtual void set_tag(const TCH* name, const TCH* value) = 0;
+	virtual void set_tag(int id, const TCH* value) = 0;
+};
+
+typedef std::auto_ptr&lt; tag_provider&lt;char&gt; &gt; ctag_provider_ptr;
+typedef std::auto_ptr&lt; tag_provider&lt;char&gt; &gt; atag_provider_ptr;
+typedef std::auto_ptr&lt; tag_provider&lt;wchar_t&gt; &gt; wtag_provider_ptr;
+</pre>
+
+<a name='sink'><b style="font-size:16px;">3.3 IMPLEMENTING A LOG SINK</b><br><br></a>
+&nbsp;&nbsp; <u>To implement your own log sink,</u> you must create a class and derive it from
+<a href="architecture.html#sink">log sink</a>. You must implement one pure virtual function to
+write messages. You should also override <a href="architecture.html#imbue">imbue()</a> function to provide
+internationalization.
+
+<ul style="margin-left: 0px;">
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">typedef typename std::basic_ostream<TCH>::pos_type pos_type;</pre>
+Defines type of string length. Because log records come from iostreams, it is the type of stream position.
+<br><br>
+
+<li style="margin-bottom: 16px;">
+<pre style="font-weight: bold;">void <a name="swrite_string">write_string</a>(const TCH* str, sink<TCH>::pos_type len)</pre>
+This is a pure virtual function, which is called to write formatted log records. It may be called three
+times per log record: to write formatted prefix, log message and formatted suffix. Note that <b>str is not
+a null terminated string</b>.
+<br><br>
+<b>str</b> pointer to charater data, which has to be written to the sink's destination; this is
+ <b>not a null terminated string</b><br>
+<b>len</b> size of the data, as amount of TCH
+<br><br>
+<pre style="font-size: 12px;">void write_string(const wchar_t* str, sink<wchar_t>::pos_type len)
+{
+	std::wcout.write(str, static_cast<std::streamsize>(len));
+}</pre>
+
+</ul>
+
+&nbsp;&nbsp; <u>The following code example demonstrates</u> how a log sink may be implemented.
+<pre>
+class my_sink : public mlog::sink&lt;char&gt;
+{
+	void write_string(const char* str, sink&lt;char&gt;::pos_type len)
+	{
+		// this function is used to write character data to the sink's destination
+		// it may be called three times per one log record: to write formatted prefix,
+		// log message and suffix
+		// <b>str is not a null terminated string</b>
+	}
+
+	mlog::sink&lt;char&gt;::self_t& imbue(const std::locale& new_locale)
+	{
+		// you must call the base function
+		sink<char>::imbue(new_locale);
+		// provide your own code to imbue your class with the provided locale
+		return *this;
+	}
+};
+</pre>
+
+<a name='filter'><b style="font-size:16px;">3.4 IMPLEMENTING A LOG FILTER</b><br><br></a>
+&nbsp;&nbsp; <u>To implement your own log filter,</u> you must implement filter interface. It has a template
+parameter TCH, which specifies character type to use.
+<pre>
+template&lt;class TCH&gt;
+class filter
+{
+public:
+	filter();
+	virtual ~filter();
+
+	// returns true, if parameters from the format provider may be allowed to the sink, and/or
+	// user message is allowed to the sink
+	// used to test for log module name, line, file, function, tags, and so on
+
+	<a name="fiter_allow">virtual</a> bool allow(const format_provider&lt;TCH&gt;& fmt_prov, const TCH* log_str,
+		typename std::basic_ostream&lt;TCH&gt;::pos_type log_len) const = 0;
+
+	// use this function to turn filter on and off
+	void enable(bool on);
+
+	// returns true, if the filter is enabled
+	// called by the logging framework, before allow() is called
+	bool is_enabled() const;
+};
+</pre>
+
+<pre style="font-weight: bold;">virtual bool allow(const format_provider&lt;TCH&gt;& fmt_prov, const TCH* log_str,
+		typename std::basic_ostream&lt;TCH&gt;::pos_type log_len) const = 0;</pre>
+This is a pure virtual function. Log sinks call it to check log records. If the function returns false, the
+log record is discarded. Note that <b>log_str is not a null terminated string</b>.
+<br><br>
+<b>fmt_prov</b> is a format_provider interface, used to check log attributes<br>
+<b>log_str</b> is a log message, created by user; this is <b>not a null terminated string</b><br>
+<b>log_len</b> is the size of log message, as amount of TCH
+<br><br>
+
+&nbsp;&nbsp; <u>The following code example demonstrates</u> how a log filter may be implemented.
+
+<pre >
+// this filter allows only log records with log level equal to error
+template&lt;class TCH&gt;
+class my_filter : public mlog::filter&lt;TCH&gt;
+{
+public:
+	virtual bool allow(const format_provider&lt;TCH&gt;& fmt_prov, const TCH*,
+		typename std::basic_ostream&lt;TCH&gt;::pos_type) const
+	{
+		return fmt_prov.get_level() == mlog::err;
+	}
+};
+
+// this is an optional code, used to help with filter creation
+template&lt;class TCH&gt;
+boost::shared_ptr&lt; filter&lt;TCH&gt; &gt; create_my_filter()
+{
+	return boost::shared_ptr&lt; filter&lt;TCH&gt; &gt;(new my_filter&lt;TCH&gt;());
+}
+</pre>
+
+&nbsp;&nbsp; <u>This is a definition of</u> format_provider interface, which you will need to use to
+create filters.
+
+<pre>
+template&lt;class TCH&gt;
+struct format_provider
+{
+	virtual ~format_provider() throw() { }
+
+	// return line in the source code, on which log message appears
+	virtual unsigned int get_line() const throw() = 0;
+
+	// return file with the source code, where log message appears
+	// if short_name is true, then this function skips full path and returns only filename
+	virtual const TCH* get_file(bool short_name) const throw() = 0;
+
+	// return function, which contains line, where log message appears
+	virtual const TCH* get_function() const throw() = 0;
+
+	// return log level, with which log message is being written
+	virtual int get_level() const throw() = 0;
+
+	// return string representation of the log level
+	virtual const TCH* get_level_name() const throw() = 0;
+
+	// return current date, time, and milliseconds
+	virtual const detail::time_type* get_time() const throw() = 0;
+
+	// return a tag value, which corresponds to the provided tag names
+	virtual const TCH* get_tag(const TCH* name) const = 0;
+	virtual const TCH* get_tag(int id) const = 0;
+
+	// return id of the thread, which is writing log message
+	virtual boost::thread::id get_thread() const throw() = 0;
+
+	// return log module name, to which log message is being written
+	virtual const TCH* get_module() const throw() = 0;
+};
+</pre>
+
+<br>
+
+<br><a href="#toc" style="font-size:16px;"><<< TOP</a>
+
+</body>
+</html>
