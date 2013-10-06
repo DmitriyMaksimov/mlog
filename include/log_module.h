@@ -287,13 +287,13 @@ private:
 	std::map<boost::thread::id, thread_logger_ptr> m_map_thread_loggers;
 	typedef typename std::map<boost::thread::id, thread_logger_ptr>::iterator tl_iter_t;
 	std::locale m_locale;
-	volatile int m_level;
-	std::auto_ptr< level_name_provider<TCH> > m_plevels;
-	std::auto_ptr< tag_provider<TCH> > m_ptags;
 	mutable boost::shared_mutex m_mutex_tl;
 	std::basic_string<TCH> m_name;
 	int m_id;
+    volatile int m_level;
 	volatile bool m_enabled;
+    std::auto_ptr< level_name_provider<TCH> > m_plevels;
+    std::auto_ptr< tag_provider<TCH> > m_ptags;
 
 	const char* get_setup_error_str()
 	{

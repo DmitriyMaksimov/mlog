@@ -129,6 +129,7 @@ public:
 		case fp_level_name:	strm << fmt_prov.get_level_name();							break;
 		case fp_newline:	strm << std::endl;											break;
 		case fp_file_short:	strm << fmt_prov.get_file(true);							break;
+        case fp_message:                                                                break;
 		}
 	}
 

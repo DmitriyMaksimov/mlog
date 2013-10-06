@@ -149,9 +149,9 @@ private:
 	unsigned int m_line;
 	const TCH* m_file;
 	const TCH* m_function;
+    int m_level;
 	const TCH* m_module;
 	int m_module_id;
-	int m_level;
 	detail::time_type m_time;
 	const tag_provider<TCH>* m_ptags;
 	const level_name_provider<TCH>* m_plevels;

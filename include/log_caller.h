@@ -73,8 +73,8 @@ public:
 	}
 
 private:
-	const thread_logger_ptr& m_tl;
 	const module_logger_itf<TCH>& m_ml;
+    const thread_logger_ptr& m_tl;
 	const inplace_format_provider<TCH> m_prov;
 };
 
