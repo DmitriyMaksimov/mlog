@@ -44,8 +44,10 @@ enum log_part
 	// date and time: month as two decimal numbers 01-12
 	fp_month,
 	// date and time: year as four decimal numbers 2008
-	fp_year,
-	// date and time: hour as two decimal numbers 00-23
+    fp_year_short,
+    // date and time: year as two decimal numbers 13
+    fp_year,
+    // date and time: hour as two decimal numbers 00-23
 	fp_hour,
 	// date and time: minutes as two decimal numbers 00-59
 	fp_minute,
@@ -120,8 +122,9 @@ public:
 		case fp_func:		strm << fmt_prov.get_function();							break;
 		case fp_day:		strm << setw(2) << detail::get_day(fmt_prov.get_time());	break;
 		case fp_month:		strm << setw(2) << detail::get_month(fmt_prov.get_time());	break;
-		case fp_year:		strm << setw(2) << detail::get_year(fmt_prov.get_time()) / 100 << setw(2) << detail::get_year(fmt_prov.get_time()) % 100; break;
-		case fp_hour:		strm << setw(2) << detail::get_hour(fmt_prov.get_time());	break;
+        case fp_year:		strm << setw(4) << detail::get_year(fmt_prov.get_time());   break;
+        case fp_year_short: strm << setw(2) << detail::get_year(fmt_prov.get_time()) % 100; break;
+        case fp_hour:		strm << setw(2) << detail::get_hour(fmt_prov.get_time());	break;
 		case fp_minute:		strm << setw(2) << detail::get_minute(fmt_prov.get_time());	break;
 		case fp_second:		strm << setw(2) << detail::get_second(fmt_prov.get_time());	break;
 		case fp_milli:		strm << setw(3) << detail::get_millis(fmt_prov.get_time());	break;
