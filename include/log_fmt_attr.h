@@ -55,7 +55,9 @@ enum log_part
 	fp_second,
 	// date and time: milliseconds as three decimal numbers 000-999
 	fp_milli,
-	// log level as an integer value
+    // date and time: milliseconds as four decimal numbers 0000-9999
+    fp_milli4,
+    // log level as an integer value
 	fp_level,
 	// log level name
 	fp_level_name,
@@ -128,7 +130,8 @@ public:
 		case fp_minute:		strm << setw(2) << detail::get_minute(fmt_prov.get_time());	break;
 		case fp_second:		strm << setw(2) << detail::get_second(fmt_prov.get_time());	break;
 		case fp_milli:		strm << setw(3) << detail::get_millis(fmt_prov.get_time());	break;
-		case fp_level:		strm << fmt_prov.get_level();								break;
+        case fp_milli4:		strm << setw(4) << detail::get_millis(fmt_prov.get_time());	break;
+        case fp_level:		strm << fmt_prov.get_level();								break;
 		case fp_level_name:	strm << fmt_prov.get_level_name();							break;
 		case fp_newline:	strm << std::endl;											break;
 		case fp_file_short:	strm << fmt_prov.get_file(true);							break;
